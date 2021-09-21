@@ -1,0 +1,9 @@
+1 - Trabalho escrito;
+
+	Pre processamento.
+	Descrever tentativas de rede, tamanho, neuronios, backpropagation resilient, retratar todos testes. 
+	Analise erros, pos processamento. 
+
+2 - Apresentação; 20min, congresso, perguntas; 
+
+Ultima semana de aula. 
