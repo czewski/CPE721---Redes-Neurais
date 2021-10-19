@@ -9,6 +9,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, mean_squared_error
 
+from xgboost import XGBRegressor
+
 #%%
 #aplicar um modelo em diferentes conjuntos de treino, igual ta no slide. 
 
@@ -31,6 +33,7 @@ ax = sns.heatmap(confusion_matrix, ax=ax, cmap=plt.cm.Blues, annot=True)
 plt.ylabel('True value')
 plt.xlabel('Predicted value')
 plt.show()
+
 # %% print the training error and MSE
 print("Training error: %f" % mlp.loss_curve_[-1])
 print("Training set score: %f" % mlp.score(PCA_X_train, y_train))
@@ -38,4 +41,17 @@ print("Test set score: %f" % mlp.score(PCA_X_test, y_test))
 print(accuracy_score(y_test, predict))
 
 print("MSE: %f" % mean_squared_error(y_test, predict))
+
+# %% xgboost
+model = XGBRegressor()
+model.fit(PCA_X_train, y_train, verbose=False)
+predictions = model.predict(PCA_X_test)
+print("Erro Médio Absoluto: {:.2f}".format(mean_squared_error(predictions, y_test)))
+
+confusion_matrix = confusion_matrix(y_test, predictions)
+fig, ax = plt.subplots(1)
+ax = sns.heatmap(confusion_matrix, ax=ax, cmap=plt.cm.Blues, annot=True)
+plt.ylabel('True value')
+plt.xlabel('Predicted value')
+plt.show()
 # %%

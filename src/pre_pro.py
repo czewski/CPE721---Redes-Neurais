@@ -34,6 +34,8 @@ df = pd.read_csv('../data/bank.csv', sep=';')
 
 #balancear ainda, usar smote
 
+#aplicar ao outro dataset, o mais completo
+
 # %% encode output
 df['y'] = LabelEncoder().fit_transform(df['y'])
 df['y']
