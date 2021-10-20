@@ -9,27 +9,85 @@ from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_er
 
 from xgboost import XGBClassifier
 
-from pre_pro import bb, X_train, X_test, y_train, y_test, X1_train, X1_test, y1_train, y1_test, X1_val, y1_val
+from pre_pro import PCA_X_test, PCA_X_train, X_train, X_test, y_train, y_test  
+from pre_pro import X1_train,y1_train, X1_test,y1_test, X1_val,y1_val
+
+import tensorflow as tf
+import os #disable logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+
+from keras.callbacks import EarlyStopping
+from keras.wrappers.scikit_learn import KerasClassifier
+from keras.regularizers import l2
+from ann_visualizer.visualize import ann_viz;
+
+#%% KERAS ANN MLP
+#smote values arent checked with correlation
+
+ann = tf.keras.models.Sequential()
+ann.add(tf.keras.layers.Dense(units= 50, activation='relu'))
+ann.add(tf.keras.layers.Dense(units= 20, activation='relu'))
+ann.add(tf.keras.layers.Dense(units= 10, activation='sigmoid'))
+ann.compile(optimizer= 'adam', loss= 'mean_squared_error', metrics= ['accuracy'])  #tentar softmax
+
+#earlystop
+early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=0, mode='auto')  #testar patiance
+
+ann_history = ann.fit(PCA_X_train,y_train, 
+                      batch_size= 32, epochs= 50, validation_split=0.2, callbacks=[early_stop])
+#validation_data=(X1_val, y1_val)
+
+#y_pred = ann.predict(X_test) #wtf is supposed to be here
+#y_pred = [round(x[0]) for x in y_pred]
+ann.summary()
+
+#Loss
+loss_train = ann_history.history['loss']
+loss_val = ann_history.history['val_loss']
+epochs = range(1,len(loss_train)+1)
+plt.plot(epochs, loss_train, 'g', label='Training loss')
+plt.plot(epochs, loss_val, 'b', label='validation loss')
+plt.title('Training and Validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+#%%
+#Acuracia
+loss_train = ann_history.history['accuracy']
+loss_val = ann_history.history['val_accuracy']
+epochs = range(1,len(loss_train)+1)
+plt.plot(epochs, loss_train, 'g', label='Training accuracy')
+plt.plot(epochs, loss_val, 'b', label='validation accuracy')
+plt.title('Training and Validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
 
 #%%
-
 mlp=MLPClassifier(
-   hidden_layer_sizes=(100,1000,100),
+   hidden_layer_sizes=(500,2000,500),
    activation="logistic",
-   solver='adam',
-   max_iter=10000, 
+   solver='adam', #sgd
+   max_iter=300, 
    validation_fraction=0.1, 
-   #early_stopping=True,
+   
    learning_rate='constant', 
-   epsilon=1e-8,
-   verbose=True)
-#mlp.fit(X1_train,y1_train)
+   epsilon=1e-8,  #1e-8
+   random_state=5,      #reprodução
+   early_stopping=True, #parada antes
+   tol=0.000010,        #default tol=0.000100
+   n_iter_no_change=50, #10
+   verbose=True         #aviso atenção
+   )
+#mlp.fit(PCA_X_train,y_train)
 mlp.fit(X_train,y_train)
-#print (mlp.score(X1_train,y1_train))
+#print (mlp.score(PCA_X_test,y_test))
 print (mlp.score(X_test, y_test))
 plt.plot(mlp.loss_curve_)
 plt.plot(mlp.validation_scores_)
-
 
 #%% mlp com criterio de parada #antes separar em treino valid teste
 max_iter = 500

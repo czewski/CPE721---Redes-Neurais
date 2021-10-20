@@ -14,43 +14,9 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from imblearn.over_sampling import SMOTE
 
-#%% MODELOS
-#xg boost
-#tem que usar mlp né por causa da materia feedforward
-  #nesse caso posso aplicar a validação durante o treino da rede
-    #validação cruzada tb
-#ainda preciso verificar treino igual foi feito no exercicio da outra materia
-
-#aplicar um modelo em diferentes conjuntos de treino, igual ta no slide. 
-#ver quais modelos de mlp, arquitetura da rede tb
-
-#entre 0 e 1 usar logistico e nao hiperbolico
-#mesmo com logistico, normalizar com medio 1 e 0
-
-#ver a heuristica do numero de camadas intermediarios
-
-#usar o treinador de hyperparemtros gridsearchCV
-
-#começar escrever artigo também. ... ..
-
-
-#%% PRE PROCESSAMENTO
-#pq dropei alguns valores (duration), se basear em correlação 
-    #remove highly correlated info; cause they mean the same
-
-#transformar categorica em hot encode e normalizar númerica
-
-#handle outliers# 
-# #.90 
-
-#explicar balanceamento, analisar pq to usando
-
-#%%
-df = pd.read_csv('../data/bank.csv', sep=';')
-
 # %% PRÉ-PROCESSAMENTO DE DADOS ===================================================
-
-
+#df = pd.read_csv('../data/bank.csv', sep=';')
+df = pd.read_csv('../data/bank-full.csv', sep=';')
 # %% encode output pra transformar yes/no pra 1/0
 df['y'] = LabelEncoder().fit_transform(df['y'])
 df['y']
@@ -60,12 +26,27 @@ df['education'].value_counts()
 
 education_mapper = {"unknown":-1, "primary":1, "secondary":2, "tertiary":3}
 df["education"] = df["education"].replace(education_mapper)
-df
-
 
 #%% drop duration
 # data.drop(['duration', 'contact','month','day'], inplace=True, axis = 1)
 df.drop(['duration'], inplace=True, axis = 1)
+
+#%%
+#need to remove outliers
+#balance
+df = df[(df['balance']>-6000) & (df['balance']<50000)]
+
+# duration 
+
+#campaign
+df = df[(df['campaign']<40)]
+
+#pdays
+df = df[(df['pdays']<575)]
+
+#previous
+df = df[(df['previous']<50)]
+
 
 
 #%% one hot encoding
@@ -90,12 +71,10 @@ bin_dict = {'yes':1, 'no':0}
 for item in binary_valued_features:
     df.replace({item:bin_dict},inplace=True)
 
-df.head()
 # %%rearrange the columns in the dataset to contain the y (target/label) at the end
 cols = list(df.columns.values)
 cols.pop(cols.index('y')) # pop y out of the list
 df = df[cols+['y']] #Create new dataframe with columns in new order
-df.describe()
 
 #%%split data
 y = df['y']
@@ -106,19 +85,20 @@ sm = SMOTE(random_state=2)
 x_train_smo1, y_train_smo1 = sm.fit_resample(X, y.ravel())
 
 #%%  checking SMOTE progress
-print('no SMOTE')
-print(df['y'].value_counts())
+# print('no SMOTE')
+# print(df['y'].value_counts())
 
-value = list(y_train_smo1)
-print('SMOTE')
-print('0', value.count(0))
-print('1', value.count(1))
+# value = list(y_train_smo1)
+# print('SMOTE')
+# print('0', value.count(0))
+# print('1', value.count(1))
 
 
-#%%
+
+#%% splitting data
 
 # spliting training and testing data #
-X_train, X_test, y_train, y_test = train_test_split(x_train_smo1,y_train_smo1, test_size= 0.2, random_state=50)
+X_train, X_test, y_train, y_test = train_test_split(x_train_smo1,y_train_smo1, test_size= 0.1, random_state=50)
 
 #splitting in training, test and validation; 80 10 10 
 X1_train, X1_test, y1_train, y1_test = train_test_split(x_train_smo1,y_train_smo1, test_size=0.1, random_state=1)
@@ -133,26 +113,50 @@ scaler.fit(X)
 X_train = scaler.transform(X_train)  
 X_test = scaler.transform(X_test)
 
-
 #split data
 X_train = pd.DataFrame(X_train)
 X_test = pd.DataFrame(X_test)
 
 print('end')
 
+#%%
+#%% correlation matrix
+correlation_matrix = pd.DataFrame(X_train).corr()
+#fig, ax = plt.subplots(figsize=(10,10))         # Sample figsize in inches
+#sns.heatmap(correlation_matrix, ax=ax)
+#correlation_matrix
+
+
+#%% removing highly correlated 
+
+# getting the upper triangle of the correlation matrix
+upper_tri = correlation_matrix.where(np.triu(np.ones(correlation_matrix.shape),k=1).astype(np.bool))
+#print(upper_tri)
+
+# checking which columns can be dropped
+to_drop = [column for column in upper_tri.columns if any(upper_tri[column] > 0.95)]
+#print('\nTo drop')
+#print(to_drop)
+
+# removing the selected columns
+X_train = X_train.drop(X_train.columns[to_drop], axis=1)
+X_test = X_test.drop(X_test.columns[to_drop], axis=1)
+#print(X_train.head())
+
+
 #%% pca?
 #ctrl barra group comment
 
-# from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA
 
-# # apply the PCA for feature reduction 
-# #DONT THINK I NEED THIS 
-# pca = PCA(n_components=0.95)
-# pca.fit(X_train)
-# PCA_X_train = pca.transform(X_train)
-# PCA_X_test = pca.transform(X_test)
+# apply the PCA for feature reduction 
+#DONT THINK I NEED THIS 
+pca = PCA(n_components=0.95)
+pca.fit(X_train)
+PCA_X_train = pca.transform(X_train)
+PCA_X_test = pca.transform(X_test)
 
-# X_train
+X_train
 
 
 # %%
