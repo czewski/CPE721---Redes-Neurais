@@ -25,13 +25,13 @@ from ann_visualizer.visualize import ann_viz;
 #smote values arent checked with correlation
 
 ann = tf.keras.models.Sequential()
-ann.add(tf.keras.layers.Dense(units= 50, activation='relu'))
-ann.add(tf.keras.layers.Dense(units= 20, activation='relu'))
+ann.add(tf.keras.layers.Dense(units= 44, activation='sigmoid'))
 ann.add(tf.keras.layers.Dense(units= 10, activation='sigmoid'))
+ann.add(tf.keras.layers.Dense(units= 1, activation='sigmoid'))
 ann.compile(optimizer= 'adam', loss= 'mean_squared_error', metrics= ['accuracy'])  #tentar softmax
 
 #earlystop
-early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=0, mode='auto')  #testar patiance
+early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='auto')  #testar patiance
 
 ann_history = ann.fit(PCA_X_train,y_train, 
                       batch_size= 32, epochs= 50, validation_split=0.2, callbacks=[early_stop])
