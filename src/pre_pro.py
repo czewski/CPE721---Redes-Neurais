@@ -15,8 +15,8 @@ from xgboost import XGBRegressor
 from imblearn.over_sampling import SMOTE
 
 # %% PRÉ-PROCESSAMENTO DE DADOS ===================================================
-#df = pd.read_csv('../data/bank.csv', sep=';')
-df = pd.read_csv('../data/bank-full.csv', sep=';')
+df = pd.read_csv('../data/bank.csv', sep=';')
+#df = pd.read_csv('../data/bank-full.csv', sep=';')
 # %% encode output pra transformar yes/no pra 1/0
 df['y'] = LabelEncoder().fit_transform(df['y'])
 df['y']
@@ -101,10 +101,9 @@ x_train_smo1, y_train_smo1 = sm.fit_resample(X, y.ravel())
 X_train, X_test, y_train, y_test = train_test_split(x_train_smo1,y_train_smo1, test_size= 0.1, random_state=50)
 
 #splitting in training, test and validation; 80 10 10 
-X1_train, X1_test, y1_train, y1_test = train_test_split(x_train_smo1,y_train_smo1, test_size=0.1, random_state=1)
+#X1_train, X1_test, y1_train, y1_test = train_test_split(x_train_smo1,y_train_smo1, test_size=0.1, random_state=1)
+#X1_train, X1_val, y1_train, y1_val = train_test_split(X1_train, y1_train, test_size=0.125, random_state=1) # 0.25 x 0.8 = 0.2
 
-X1_train, X1_val, y1_train, y1_val = train_test_split(X1_train, y1_train, test_size=0.125, random_state=1) # 0.25 x 0.8 = 0.2
-#x_train_smo, X_val, y_train_smo, Y_val = train_test_split(x_train_smo1,y_train_smo1, test_size= 0.3, random_state=0)
 
 #%%
 # Feature scaling #normalazing?
@@ -143,20 +142,22 @@ X_train = X_train.drop(X_train.columns[to_drop], axis=1)
 X_test = X_test.drop(X_test.columns[to_drop], axis=1)
 #print(X_train.head())
 
+#%% splitting validation part
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.125, random_state=1)
 
 #%% pca?
 #ctrl barra group comment
 
-from sklearn.decomposition import PCA
+# from sklearn.decomposition import PCA
 
-# apply the PCA for feature reduction 
-#DONT THINK I NEED THIS 
-pca = PCA(n_components=0.95)
-pca.fit(X_train)
-PCA_X_train = pca.transform(X_train)
-PCA_X_test = pca.transform(X_test)
+# # apply the PCA for feature reduction 
+# #DONT THINK I NEED THIS 
+# pca = PCA(n_components=0.95)
+# pca.fit(X_train)
+# PCA_X_train = pca.transform(X_train)
+# PCA_X_test = pca.transform(X_test)
 
-X_train
+# X_train
 
 
 # %%
