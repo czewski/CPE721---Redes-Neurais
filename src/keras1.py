@@ -1,11 +1,10 @@
-
 #%%
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import numpy as np 
 from sklearn.neural_network import MLPClassifier 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix  
 from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error
 
 from pre_pro import  X_train, X_test, y_train, y_test, X_val, y_val
@@ -20,18 +19,20 @@ from keras.callbacks import EarlyStopping
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.regularizers import l2
 from keras.backend import clear_session
+from keras.metrics import confus
 from ann_visualizer.visualize import ann_viz;
 
+
+
 #%% KERAS ANN MLP
-#smote values arent checked with correlation
 #maybe add dropout?
 clear_session()
 
-ann = tf.keras.models.Sequential()
-#ann.add(tf.keras.layers.Dense(units= 44, activation='sigmoid')) #44 #37 #no dense? 
+ann = tf.keras.models.Sequential(name='MLPFullyConnected')
 ann.add(tf.keras.layers.InputLayer(input_shape=(44,)))
-ann.add(tf.keras.layers.Dense(units= 32, activation='sigmoid'))
-ann.add(tf.keras.layers.Dense(units= 1, activation='sigmoid'))
+ann.add(tf.keras.layers.Dense(units= 10, activation='relu')) #testar tgh
+#ann.add(tf.keras.layers.Dense(units= 10, activation='relu')) #testar tgh
+ann.add(tf.keras.layers.Dense(units= 1, activation='sigmoid')) #sigmoid
 
 optimizer = Adam()
 
@@ -52,16 +53,12 @@ early_stop = EarlyStopping(monitor='val_loss',
 ann_history = ann.fit(X_train,y_train, 
                       shuffle=True, 
                       use_multiprocessing=True, #validation_split=0.1,
-                      batch_size= 128, 
+                      batch_size= 32, 
                       epochs= 200, 
                       validation_data = (X_val, y_val),  
                       callbacks=[early_stop])
-#batch_size=32
-#validation_data=(X1_val, y1_val)
 
-#y_pred = ann.predict(X_test) #wtf is supposed to be here
-#y_pred = [round(x[0]) for x in y_pred]
-
+scores = ann.evaluate(X_test, y_test, batch_size=32)
 
 #Loss
 loss_train = ann_history.history['loss']
@@ -75,8 +72,9 @@ plt.ylabel('Loss')
 plt.legend()
 plt.show()
 #%%
-
 #Acuracia
+print("%s: %.2f%%" % (ann.metrics_names[1], scores[1]*100))
+
 ann.summary()
 ann.get_config()
 loss_train = ann_history.history['accuracy']
@@ -94,7 +92,13 @@ plt.show()
 from keras.utils.vis_utils import plot_model
 plot_model(ann, to_file='model.png')
 #%%confusion matrix
+y_pred = ann.predict_classes(X_test)
+#print(y_pred)
+cma = confusion_matrix(y_test, y_pred) #labels='1,2'
+print(cma)
 
 #%%error histogram for train, test, validation
 
 sns.histplot(data=ann_history.history['loss'], kde=True, log_scale=True, element='step', fill=False)
+
+# %%
