@@ -17,6 +17,8 @@ from imblearn.over_sampling import SMOTE
 
 # %% PRÉ-PROCESSAMENTO DE DADOS ===================================================
 df = pd.read_csv('../data/bank.csv', sep=';')
+
+df.head()
 #df = pd.read_csv('../data/bank-full.csv', sep=';')
 # %% encode output pra transformar yes/no pra 1/0
 df['y'] = LabelEncoder().fit_transform(df['y'])
