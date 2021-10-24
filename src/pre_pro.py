@@ -11,12 +11,13 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
 
 #from xgboost import XGBRegressor
 from imblearn.over_sampling import SMOTE
 
 # %% PRÉ-PROCESSAMENTO DE DADOS ===================================================
-df = pd.read_csv('../data/bank.csv', sep=';')
+df = pd.read_csv('../data/bank-full.csv', sep=';')
 
 df.head()
 #df = pd.read_csv('../data/bank-full.csv', sep=';')
@@ -50,7 +51,18 @@ df = df[(df['pdays']<575)]
 #previous
 df = df[(df['previous']<50)]
 
+#%%
+#binary features
+binary_valued_features = ['default','housing', 'loan']
+bin_dict = {'yes':1, 'no':0}
 
+#Replace binary values in data using the provided dictionary
+for item in binary_valued_features:
+    df.replace({item:bin_dict},inplace=True)
+
+    
+#%%
+#df[['education', 'default', 'housing', 'loan', 'y']].head(-5)
 
 #%% one hot encoding
 # listing down the features that has categorical data
@@ -65,14 +77,7 @@ for item in categorial_features:
         #Set the new column in df to have corresponding df values
         df[categorial_feature] = df1[categorial_feature]
 
-
-#binary features
-binary_valued_features = ['default','housing', 'loan']
-bin_dict = {'yes':1, 'no':0}
-
-#Replace binary values in data using the provided dictionary
-for item in binary_valued_features:
-    df.replace({item:bin_dict},inplace=True)
+df.head()
 
 # %%rearrange the columns in the dataset to contain the y (target/label) at the end
 cols = list(df.columns.values)
@@ -83,7 +88,7 @@ df = df[cols+['y']] #Create new dataframe with columns in new order
 y = df['y']
 X = df.values[:, :-1] # get all columns except the last column
 
-#smote
+#smote 11111111111111111111111111111111111111111111
 sm = SMOTE(random_state=2)
 x_train_smo1, y_train_smo1 = sm.fit_resample(X, y.ravel())
 
@@ -103,14 +108,12 @@ x_train_smo1, y_train_smo1 = sm.fit_resample(X, y.ravel())
 # spliting training and testing data #
 X_train, X_test, y_train, y_test = train_test_split(x_train_smo1,y_train_smo1, test_size= 0.1, random_state=50)
 
-#splitting in training, test and validation; 80 10 10 
-#X1_train, X1_test, y1_train, y1_test = train_test_split(x_train_smo1,y_train_smo1, test_size=0.1, random_state=1)
-#X1_train, X1_val, y1_train, y1_val = train_test_split(X1_train, y1_train, test_size=0.125, random_state=1) # 0.25 x 0.8 = 0.2
 
+#X_train, X_test, y_train, y_test = train_test_split(X,y, test_size= 0.1, random_state=50)
 
 #%%
-# Feature scaling #normalazing?
-scaler = StandardScaler()  
+# Feature scaling #normalazing? #with_mean=False, with_std=False
+scaler = StandardScaler()  #media zero e desvio padrao um
 scaler.fit(X)   
 X_train = scaler.transform(X_train)  
 X_test = scaler.transform(X_test)
@@ -119,14 +122,20 @@ X_test = scaler.transform(X_test)
 X_train = pd.DataFrame(X_train)
 X_test = pd.DataFrame(X_test)
 
-print('end')
 
+#%%
+#print(scaler.var_)
+#print(X_train)
+# X_train.describe()
+# #%%
+# X_train.mean(axis=0)
+# X_train.std(axis=0)
 #%%
 #%% correlation matrix
 correlation_matrix = pd.DataFrame(X_train).corr()
-#fig, ax = plt.subplots(figsize=(10,10))         # Sample figsize in inches
-#sns.heatmap(correlation_matrix, ax=ax)
-#correlation_matrix
+# fig, ax = plt.subplots(figsize=(10,10))         # Sample figsize in inches
+# sns.heatmap(correlation_matrix, ax=ax)
+# correlation_matrix
 
 
 #%% removing highly correlated 
@@ -143,11 +152,16 @@ to_drop = [column for column in upper_tri.columns if any(upper_tri[column] > 0.9
 # removing the selected columns
 X_train = X_train.drop(X_train.columns[to_drop], axis=1)
 X_test = X_test.drop(X_test.columns[to_drop], axis=1)
-#print(X_train.head())
+X_train.to_numpy()
+X_test.to_numpy()
 
+X_train = pd.DataFrame(X_train)
+X_test = pd.DataFrame(X_test)
 #%% splitting validation part
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.125, random_state=1)
+#dont need this part if im using kfold. 
+#X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.125, random_state=1)
 
+print('end')
 #%% pca?
 #ctrl barra group comment
 

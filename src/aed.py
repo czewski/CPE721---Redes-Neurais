@@ -9,9 +9,11 @@ import random
 # %% Leitura de dados ===================================================
 missing_values = ["unknown"]
 df = pd.read_csv('../data/bank-full.csv', sep=';', na_values = missing_values)
-df.head()
+
 #plt.style.use('ggplot')
 colors = ['#264653', '#2A9D8F', '#E9C46A', '#F4A261', '#E76F51']
+#%%
+df.head(-3)
 
 # %% Verificando dados faltantes ===================================================
 #ver o que fazer ainda
@@ -94,6 +96,15 @@ cmap = sns.diverging_palette(230, 20, as_cmap=True)
 # Draw the heatmap with the mask and correct aspect ratio
 sns.heatmap(correlation, mask=mask, cmap=cmap, vmax=.3, center=0,
             square=True, linewidths=.5, cbar_kws={"shrink": .5}, annot=True)
+
+
+#%% test this
+corr = np.corrcoef(np.random.randn(10, 200))
+mask = np.zeros_like(corr)
+mask[np.triu_indices_from(mask)] = True
+with sns.axes_style("white"):
+    f, ax = plt.subplots(figsize=(7, 5))
+    ax = sns.heatmap(corr, mask=mask, vmax=.3, square=True)
 
 #%%
 cm = sns.light_palette('red', as_cmap=True)
