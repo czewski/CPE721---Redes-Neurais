@@ -93,13 +93,13 @@ sm = SMOTE(random_state=2)
 x_train_smo1, y_train_smo1 = sm.fit_resample(X, y.ravel())
 
 #%%  checking SMOTE progress
-# print('no SMOTE')
-# print(df['y'].value_counts())
+print('no SMOTE')
+print(df['y'].value_counts())
 
-# value = list(y_train_smo1)
-# print('SMOTE')
-# print('0', value.count(0))
-# print('1', value.count(1))
+value = list(y_train_smo1)
+print('SMOTE')
+print('0', value.count(0))
+print('1', value.count(1))
 
 
 

@@ -20,7 +20,7 @@ df.head(-3)
 
 df.info()
 df.describe()
-#print(df.isnull().sum())
+print(df.isnull().sum())
 
 # %% Analise exploratória de dados ===================================================
 
